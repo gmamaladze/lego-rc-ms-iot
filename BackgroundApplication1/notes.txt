@@ -1,0 +1,7 @@
+﻿setbootoption - headless switch
+iotstartup  - background tasks
+Windows IoT Core Project Templates 
+
+Severity	Code	Description	Project	File	Line	Suppression State
+Error		DEP6100 : The following unexpected error occurred during bootstrapping stage 'Connecting to the device 'DusiHome'.': 
+MissingMethodException - Methode nicht gefunden: "Boolean Microsoft.Tools.Connectivity.RemoteDevice.Ping()".	BackgroundApplication1			
