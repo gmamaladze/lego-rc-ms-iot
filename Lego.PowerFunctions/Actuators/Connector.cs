@@ -21,7 +21,7 @@ namespace Gma.Netmf.Hardware.Lego.PowerFunctions.Actuators
             m_Output = output;
         }
 
-        internal RemoteControl RemoteControl
+        public RemoteControl RemoteControl
         {
             get { return m_RemoteControl; }
         }
