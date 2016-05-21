@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="ActuatorController.cs" />
     <Compile Include="PingController.cs" />
+    <Compile Include="SpiDeviceFactory.cs" />
     <Compile Include="StartupTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

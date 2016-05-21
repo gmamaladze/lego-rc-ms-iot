@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using Windows.Foundation.Collections;
 using Devkoes.Restup.WebServer.Attributes;
 using Devkoes.Restup.WebServer.Models.Schemas;
 using Devkoes.Restup.WebServer.Rest.Models.Contracts;
 using Gma.Netmf.Hardware.Lego.PowerFunctions.Actuators;
+using Gma.Netmf.Hardware.Lego.PowerFunctions.Communication;
 using Gma.Netmf.Hardware.Lego.PowerFunctions.Control;
 
 namespace Lego.PowerFunctions.WebApi
@@ -10,6 +12,20 @@ namespace Lego.PowerFunctions.WebApi
     [RestController(InstanceCreationType.PerCall)]
     public sealed class ActuatorController
     {
+        private static readonly Dictionary<int, Channel> Nr2Channel = new Dictionary<int, Channel>
+        {
+            {1, Channel.Ch1 },
+            {2, Channel.Ch2 },
+            {3, Channel.Ch3 },
+            {4, Channel.Ch4 }
+        };
+
+        private static readonly Dictionary<string, Output> Color2Output = new Dictionary<string, Output>
+        {
+            {"red", Output.Red },
+            {"blue", Output.Blue }
+        };
+
         private static readonly Dictionary<string, PwmSpeed> Speed2Pwm = new Dictionary<string, PwmSpeed>
         {
             {"break", PwmSpeed.BreakThenFloat},
@@ -30,41 +46,50 @@ namespace Lego.PowerFunctions.WebApi
             {"fw7", PwmSpeed.ForwardStep7}
         };
 
-        private readonly Connector _connector;
+        private readonly Transmitter _transmitter;
 
-        public ActuatorController(Connector connector)
+        public ActuatorController(object transmitter)
         {
-            _connector = connector;
+            _transmitter = (Transmitter)transmitter;
         }
 
-        [UriFormat("/set/{speed}")]
-        public IGetResponse Set(string speed)
+        [UriFormat("{channelNr}/{color}/set/{speed}")]
+        public IGetResponse Set(int channelNr, string color, string speed)
         {
-            PwmSpeed pwm;
-            var isOk = Speed2Pwm.TryGetValue(speed, out pwm);
+            Channel channel;
+            Output output = Output.Blue;
+            PwmSpeed pwm = PwmSpeed.BreakThenFloat;
+            var isOk = 
+                Nr2Channel.TryGetValue(channelNr, out channel) &&
+                Color2Output.TryGetValue(color, out output) &&
+                Speed2Pwm.TryGetValue(speed, out pwm);
+
             if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
-            _connector.RemoteControl.Execute(_connector.Output, pwm);
+
+            var receiver = new Receiver(_transmitter, channel);
+            receiver.BlueConnector.RemoteControl.Execute(output, pwm);
+
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
 
         [UriFormat("/break")]
         public IGetResponse Berak()
         {
-            _connector.RemoteControl.Execute(_connector.Output, PwmSpeed.BreakThenFloat);
+         //   _connector.RemoteControl.Execute(_connector.Output, PwmSpeed.BreakThenFloat);
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
 
         [UriFormat("/inc")]
         public IGetResponse Inc()
         {
-            _connector.RemoteControl.Execute(_connector.Output, IncDec.IncrementPwm);
+           // _connector.RemoteControl.Execute(_connector.Output, IncDec.IncrementPwm);
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
 
         [UriFormat("/dec")]
         public IGetResponse Dec()
         {
-            _connector.RemoteControl.Execute(_connector.Output, IncDec.DecrementNumericalPwm);
+            //_connector.RemoteControl.Execute(_connector.Output, IncDec.DecrementNumericalPwm);
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
     }
