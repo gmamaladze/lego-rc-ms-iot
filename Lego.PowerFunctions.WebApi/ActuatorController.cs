@@ -56,38 +56,41 @@ namespace Lego.PowerFunctions.WebApi
         [UriFormat("{channelNr}/{color}/set/{speed}")]
         public IGetResponse Set(int channelNr, string color, string speed)
         {
+            bool isOk;
             Channel channel;
-            Output output = Output.Blue;
-            PwmSpeed pwm = PwmSpeed.BreakThenFloat;
-            var isOk = 
-                Nr2Channel.TryGetValue(channelNr, out channel) &&
-                Color2Output.TryGetValue(color, out output) &&
-                Speed2Pwm.TryGetValue(speed, out pwm);
-
+            isOk = Nr2Channel.TryGetValue(channelNr, out channel);
             if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
 
-            var receiver = new Receiver(_transmitter, channel);
-            receiver.BlueConnector.RemoteControl.Execute(output, pwm);
+            Output output;
+            isOk = Color2Output.TryGetValue(color, out output);
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            
+            PwmSpeed pwm;
+            isOk = Speed2Pwm.TryGetValue(speed, out pwm);
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            
+            var rc = new RemoteControl(_transmitter, channel);
+            rc.Execute(output, pwm);
 
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
 
         [UriFormat("/break")]
-        public IGetResponse Berak()
+        public IGetResponse Berak(int channelNr, string color)
         {
          //   _connector.RemoteControl.Execute(_connector.Output, PwmSpeed.BreakThenFloat);
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
 
         [UriFormat("/inc")]
-        public IGetResponse Inc()
+        public IGetResponse Inc(int channelNr, string color)
         {
            // _connector.RemoteControl.Execute(_connector.Output, IncDec.IncrementPwm);
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
 
         [UriFormat("/dec")]
-        public IGetResponse Dec()
+        public IGetResponse Dec(int channelNr, string color)
         {
             //_connector.RemoteControl.Execute(_connector.Output, IncDec.DecrementNumericalPwm);
             return new GetResponse(GetResponse.ResponseStatus.OK);

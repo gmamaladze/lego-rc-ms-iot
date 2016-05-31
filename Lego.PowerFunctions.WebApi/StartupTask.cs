@@ -15,7 +15,6 @@ namespace Lego.PowerFunctions.WebApi
 {
     public sealed class StartupTask : IBackgroundTask
     {
-     
 
         private BackgroundTaskDeferral _deferral;
 
@@ -24,12 +23,12 @@ namespace Lego.PowerFunctions.WebApi
             _deferral = taskInstance.GetDeferral();
             using (var device = SpiDeviceFactory.InitSpi().Result)
             using (var rcTransmitter = new Transmitter(device, true))
-            using (var server = new HttpServer(1390))
+                
             {
+                var server = new HttpServer(1390);
                 var pingHandler = new RestRouteHandler();
                 pingHandler.RegisterController<PingController>(3);
                 server.RegisterRoute("test", pingHandler);
-                server.RegisterRoute("test/2", pingHandler);
 
                 var handler = new RestRouteHandler();
                 handler.RegisterController<ActuatorController>(rcTransmitter);
@@ -37,7 +36,5 @@ namespace Lego.PowerFunctions.WebApi
                 server.StartServerAsync().Wait();
             }
         }
-
-        /* Initialize the SPI bus */
     }
 }
