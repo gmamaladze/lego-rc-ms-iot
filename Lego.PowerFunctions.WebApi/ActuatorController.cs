@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Windows.Foundation.Collections;
 using Devkoes.Restup.WebServer.Attributes;
@@ -6,9 +7,83 @@ using Devkoes.Restup.WebServer.Rest.Models.Contracts;
 using Gma.Netmf.Hardware.Lego.PowerFunctions.Actuators;
 using Gma.Netmf.Hardware.Lego.PowerFunctions.Communication;
 using Gma.Netmf.Hardware.Lego.PowerFunctions.Control;
+using Gma.Netmf.Hardware.Lego.PowerFunctions.Commands;
 
 namespace Lego.PowerFunctions.WebApi
 {
+
+    [RestController(InstanceCreationType.Singleton)]
+    public sealed class LegoController
+    {
+        private readonly CommandProcessor _cp;
+
+        public LegoController(object transmitter, string channel)
+        {
+            var channelvalue = Enum.Parse(typeof(Channel), channel, true);
+            _cp = new CommandProcessor((Transmitter)transmitter, (Channel)channelvalue);
+        }
+
+        [UriFormat("ext?function={function}")]
+        public IGetResponse Ext(string function)
+        {
+            ExtFunction extFuncValue;
+            var isOk = Enum.TryParse(function, true, out extFuncValue);
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            _cp.Execute(CommandFactory.Create(extFuncValue));
+            return new GetResponse(GetResponse.ResponseStatus.OK);
+
+        }
+
+        [UriFormat("setstate?red={blueState}&blue={redState}")]
+        public IGetResponse SetState(string redState, string blueState)
+        {
+            DirectState blueValue;
+            DirectState redValue;
+            var isOk = Enum.TryParse(blueState, true, out blueValue); 
+            isOk = Enum.TryParse(redState, true, out redValue) && isOk;
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            _cp.Execute(CommandFactory.Create(blueValue, redValue));
+            return new GetResponse(GetResponse.ResponseStatus.OK);
+        }
+
+        [UriFormat("setspeed?red={redSpeed}&blue={blueSpeed}")]
+        public IGetResponse SetSpeed(string redSpeed, string blueSpeed)
+        {
+            PwmSpeed blueValue;
+            PwmSpeed redValue;
+            var isOk = Enum.TryParse(redSpeed, true, out blueValue);
+            isOk = Enum.TryParse(blueSpeed, true, out redValue) && isOk;
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            _cp.Execute(CommandFactory.Create(redValue, blueValue));
+            return new GetResponse(GetResponse.ResponseStatus.OK);
+        }
+
+        [UriFormat("incdecone?output={output}&value={incDec}")]
+        public IGetResponse IncDecOne(string output, string incDec)
+        {
+            Output outputValue;
+            IncDec incDecValue;
+            var isOk = Enum.TryParse(output, true, out outputValue);
+            isOk = Enum.TryParse(incDec, true, out incDecValue) && isOk;
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            _cp.Execute(CommandFactory.Create(outputValue, incDecValue));
+            return new GetResponse(GetResponse.ResponseStatus.OK);
+        }
+
+        [UriFormat("setspeedone?output={output}&value={speed}")]
+        public IGetResponse SetSpeedOne(string output, string speed)
+        {
+            Output outputValue;
+            PwmSpeed speedValue;
+            var isOk = Enum.TryParse(output, true, out outputValue);
+            isOk = Enum.TryParse(speed, true, out speedValue) && isOk;
+            if (!isOk) return new GetResponse(GetResponse.ResponseStatus.NotFound);
+            _cp.Execute(CommandFactory.Create(outputValue, speedValue));
+            return new GetResponse(GetResponse.ResponseStatus.OK);
+        }
+    }
+
+
     [RestController(InstanceCreationType.PerCall)]
     public sealed class ActuatorController
     {

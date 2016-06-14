@@ -13,6 +13,9 @@ using Gma.Netmf.Hardware.Lego.PowerFunctions.Control;
 
 namespace Lego.PowerFunctions.WebApi
 {
+
+
+
     public sealed class StartupTask : IBackgroundTask
     {
 
@@ -22,9 +25,8 @@ namespace Lego.PowerFunctions.WebApi
         {
             _deferral = taskInstance.GetDeferral();
             using (var device = SpiDeviceFactory.InitSpi().Result)
-            using (var rcTransmitter = new Transmitter(device, true))
-                
             {
+                var rcTransmitter = new Transmitter(null);
                 var server = new HttpServer(1390);
                 var pingHandler = new RestRouteHandler();
                 pingHandler.RegisterController<PingController>(3);

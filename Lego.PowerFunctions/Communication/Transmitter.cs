@@ -2,38 +2,20 @@
 // Copyright (c) 2014 George Mamaladze
 // See license.txt or http://opensource.org/licenses/mit-license.php
 
-#region usings
-
-using System;
-using System.Threading;
-using Gma.Netmf.Hardware.Lego.PowerFunctions.Control;
-using Windows.Devices.Spi;
 using System.Threading.Tasks;
-
-#endregion
+using Gma.Netmf.Hardware.Lego.PowerFunctions.Control;
 
 namespace Gma.Netmf.Hardware.Lego.PowerFunctions.Communication
 {
-    public class Transmitter : IDisposable
+    public class Transmitter
     {
         private const int MessageResendCount = 5;
-        private readonly bool m_DisposeSpi;
-        private readonly SpiDevice m_Spi;
+        private readonly ISender m_Spi;
 
-        public Transmitter(SpiDevice spi, bool disposeSpi)
+        public Transmitter(ISender spi)
         {
             m_Spi = spi;
-            m_DisposeSpi = disposeSpi;
         }
-
-        public void Dispose()
-        {
-            if (m_DisposeSpi && m_Spi != null)
-            {
-                m_Spi.Dispose();
-            }
-        }
-
 
 
         internal void Send(Message message)
@@ -52,11 +34,11 @@ namespace Gma.Netmf.Hardware.Lego.PowerFunctions.Communication
 
         protected virtual void SendData(ushort[] data)
         {
-            var buffer = new byte[data.Length * 2];
-            for (int i = 0; i < data.Length; i++)
+            var buffer = new byte[data.Length*2];
+            for (var i = 0; i < data.Length; i++)
             {
-                buffer[i * 2] = (byte)(data[i] >> 8 & 0xFF);
-                buffer[i * 2 + 1] = (byte)(data[i] & 0xFF);
+                buffer[i*2] = (byte) (data[i] >> 8 & 0xFF);
+                buffer[i*2 + 1] = (byte) (data[i] & 0xFF);
             }
             m_Spi.Write(buffer);
         }
@@ -68,7 +50,7 @@ namespace Gma.Netmf.Hardware.Lego.PowerFunctions.Communication
             switch (resendIndex)
             {
                 case 0:
-                    milliseconds = 4 - (int)channel + 1;
+                    milliseconds = 4 - (int) channel + 1;
                     break;
                 case 2:
                 case 1:
@@ -76,12 +58,12 @@ namespace Gma.Netmf.Hardware.Lego.PowerFunctions.Communication
                     break;
                 case 4:
                 case 3:
-                    milliseconds = 5 + ((int)channel + 1) * 2;
+                    milliseconds = 5 + ((int) channel + 1)*2;
                     break;
             }
 
             // Tm = 16 ms (in theory 13.7 ms)
-            await Task.Delay(milliseconds * 16);
+            await Task.Delay(milliseconds*16);
         }
     }
 }

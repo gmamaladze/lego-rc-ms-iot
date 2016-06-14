@@ -20,13 +20,6 @@ namespace Lego.PowerFunctions.WebApi
         [UriFormat("/ping")]
         public IGetResponse Ping()
         {
-            using (var device = SpiDeviceFactory.InitSpi().Result)
-            using (var rcTransmitter = new Transmitter(device, true))
-            {
-                var receiver  = new Receiver(rcTransmitter, Channel.Ch1);
-                receiver.BlueConnector.RemoteControl.Execute(receiver.BlueConnector.Output, PwmSpeed.ForwardStep1);
-            }
-
             return new GetResponse(GetResponse.ResponseStatus.OK);
         }
     }
